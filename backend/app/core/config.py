@@ -9,7 +9,7 @@ rotation and environment auditing a one-file operation.
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,6 +24,21 @@ class Settings(BaseSettings):
 
     # --- Database ---
     DATABASE_URL: str = Field(..., description="postgresql+asyncpg://user:pass@host:5432/db")
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def _normalize_asyncpg_scheme(cls, v: str) -> str:
+        """
+        Many hosts (Render, Railway, Heroku-style, Supabase) hand out a plain
+        `postgresql://` or `postgres://` connection string. SQLAlchemy's async
+        engine requires the `+asyncpg` driver suffix, so normalize it here
+        rather than requiring every deploy target to know about this quirk.
+        """
+        if v.startswith("postgres://"):
+            return "postgresql+asyncpg://" + v[len("postgres://"):]
+        if v.startswith("postgresql://"):
+            return "postgresql+asyncpg://" + v[len("postgresql://"):]
+        return v
 
     # --- Auth (Clerk) ---
     CLERK_SECRET_KEY: str = Field(..., description="Used server-side to verify session tokens")

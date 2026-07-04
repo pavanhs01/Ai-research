@@ -1,3 +1,9 @@
+databases:
+  - name: ai-research-assistant-db
+    plan: starter
+    databaseName: research_assistant
+    user: research_assistant
+
 services:
   - type: web
     name: ai-research-assistant-api
@@ -6,13 +12,19 @@ services:
     dockerContext: ./backend
     plan: starter
     healthCheckPath: /health
+    disk:
+      name: chroma-data
+      mountPath: /app/chroma_data
+      sizeGB: 1
     envVars:
       - key: ENVIRONMENT
         value: production
       - key: FRONTEND_ORIGIN
         sync: false
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: ai-research-assistant-db
+          property: connectionString
       - key: CLERK_SECRET_KEY
         sync: false
       - key: CLERK_JWKS_URL
@@ -26,12 +38,20 @@ services:
       # this is the one place the key is entered, and only in production.
       - key: OPENAI_API_KEY
         sync: false
+      # Leave blank for OpenAI directly, or set to https://openrouter.ai/api/v1
+      # (with matching model slugs, e.g. openai/gpt-4.1) to use OpenRouter instead.
+      - key: OPENAI_BASE_URL
+        sync: false
       - key: OPENAI_CHAT_MODEL
         value: gpt-4.1
       - key: OPENAI_EMBEDDING_MODEL
         value: text-embedding-3-small
+      # Chroma by default — zero extra setup, backed by the persistent disk above.
+      # Switch to "pinecone" + fill in the Pinecone vars below for a managed vector DB.
       - key: VECTOR_STORE_PROVIDER
-        value: pinecone
+        value: chroma
+      - key: CHROMA_DB_PATH
+        value: /app/chroma_data
       - key: PINECONE_API_KEY
         sync: false
       - key: PINECONE_ENVIRONMENT
@@ -49,4 +69,8 @@ services:
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_ID_PRO
+        sync: false
+      - key: STRIPE_PRICE_ID_TEAM
         sync: false
