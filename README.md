@@ -195,3 +195,15 @@ Upload → Parse (PDF/DOCX/TXT/MD/URL + OCR fallback)
 **Auth**: Clerk  
 **Billing**: Stripe  
 **Deploy**: Vercel (frontend) · Render (backend) · Docker · GitHub Actions CI
+
+## Changelog
+
+### Fixes applied during audit (this session)
+- **Dependency conflict resolved**: `next` bumped 15.1.0 → 15.5.20 and `react`/`react-dom` bumped 19.0.0 → 19.2.7 to satisfy `@clerk/nextjs`'s peer requirements. The original lockfile was internally inconsistent and would not install cleanly on a fresh clone.
+- **Stripe price ID placeholders removed**: `STRIPE_PRICE_ID_PRO`/`STRIPE_PRICE_ID_TEAM` are now real environment variables (see `.env.example`) instead of hardcoded placeholder strings. Checkout now fails with a clear configuration error if they're unset, instead of silently calling Stripe with a fake price ID.
+- **Conversation delete & rename added**: previously only projects and documents could be deleted; conversations had no delete or rename endpoint despite a `title` field already existing on the model. Added `DELETE /api/v1/chat/conversations/{id}` and `PATCH /api/v1/chat/conversations/{id}`, plus matching frontend hooks and UI (trash + pencil icons in the conversation sidebar).
+- **OpenRouter support**: `OPENAI_BASE_URL` is now configurable, so any OpenAI-compatible provider (OpenRouter, Groq, etc.) can be used instead of OpenAI directly.
+
+### Verification
+- Backend: 64/64 tests passing against a real PostgreSQL 16 instance (fresh `pip install`)
+- Frontend: zero TypeScript errors, zero lint errors, clean `next build` across all 12 routes (fresh `npm install`)

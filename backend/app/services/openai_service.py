@@ -32,7 +32,10 @@ class OpenAIService:
     def __init__(self):
         if not settings.OPENAI_API_KEY:
             logger.warning("OPENAI_API_KEY is not set — chat/embedding calls will fail until configured.")
-        self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+        self.client = AsyncOpenAI(
+            api_key=settings.OPENAI_API_KEY,
+            base_url=settings.OPENAI_BASE_URL or None,
+        )
 
     def _ensure_configured(self) -> None:
         if not settings.OPENAI_API_KEY:

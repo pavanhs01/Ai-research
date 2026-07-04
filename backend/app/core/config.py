@@ -33,6 +33,11 @@ class Settings(BaseSettings):
 
     # --- OpenAI (required only at call-time, validated lazily so app can boot without it in dev) ---
     OPENAI_API_KEY: str = Field(default="", description="Set via hosting platform env vars in production")
+    OPENAI_BASE_URL: str = Field(
+        default="",
+        description="Leave blank for OpenAI. Set to https://openrouter.ai/api/v1 (or another "
+        "OpenAI-compatible endpoint) to use an alternate provider.",
+    )
     OPENAI_CHAT_MODEL: str = "gpt-4.1"
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
 
